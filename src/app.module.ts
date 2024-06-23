@@ -4,7 +4,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { NodemailerModule } from './nodemailer/nodemailer.module';
 import configuration from './config/configuration';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -13,7 +15,22 @@ import configuration from './config/configuration';
       load: [configuration],
       envFilePath: '.env'
     }),
-    // Usar MongooseModule.forRootAsync para inyectar ConfigService
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => (
+        {
+        transport : {
+          host: configService.get<string>('email_host'),
+          port: configService.get<number>('email_port'),
+          secure: true,
+          auth: {
+            user: configService.get<string>('auth_user'),
+            pass: configService.get<string>('auth_pass'),
+          },
+        }
+      }),
+      inject: [ConfigService],
+    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -22,7 +39,8 @@ import configuration from './config/configuration';
       inject: [ConfigService],
     }),
     UsersModule,
-    AuthModule
+    AuthModule,
+    NodemailerModule
   ],
   controllers: [],
   providers: [AuthService],
