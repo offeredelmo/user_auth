@@ -3,6 +3,7 @@ import { NodemailerService } from './nodemailer.service';
 import { NodemailerController } from './nodemailer.controller';
 
 @Module({
+  exports: [NodemailerService],
   controllers: [NodemailerController],
   providers: [NodemailerService],
 })

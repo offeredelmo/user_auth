@@ -8,8 +8,12 @@ export class NodemailerService {
   constructor(private readonly mailService: MailerService) {}
   
   
-  async emailRecoveryPassword() {
-    const message = `Hola si tu no solicitaste la recuperacion de contraseña ignora esto.`;
+    
+  async sendEmailByRecoverypassword(code:string) {
+    const message = `
+    Hola si tu no solicitaste la recuperacion de contraseña ignora esto.
+    este es el codigo de verificacion ( ${code} )
+    `;
 
     try {
       await this.mailService.sendMail({
@@ -25,9 +29,4 @@ export class NodemailerService {
       throw new Error(`Failed to send email ${error}`);
     }
   }
-
-  emailPromotionFirst() {
-    return ``;
-  }
-
 }

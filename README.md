@@ -34,7 +34,26 @@ $ npm install
 
 ## Running the app
 
+### crear un archivo .env y colocar las variables de entorno 
+
+PORT=
+
+MONGO_URL_DB=
+
+EMAIL_HOST=
+
+EMAIL_PORT=
+
+AUTH_USER=
+
+AUTH_PASS=
+
+ACCESS_TOKEN=
+
+REFRESH_TOKEN=
+
 ```bash
+
 # development
 $ npm run start
 

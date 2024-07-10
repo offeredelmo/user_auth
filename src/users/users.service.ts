@@ -5,7 +5,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from './entities/user.entity';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt'
-import { Role } from './enums/rol.enum';
+import { UserRole } from './enums/rol.enum';
+
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) { }
@@ -14,7 +15,7 @@ export class UsersService {
     try {
       const newUser = new this.userModel(createUserDto)
       newUser.password = await bcrypt.hash(createUserDto.password, 10)
-      newUser.roles.push(Role.USER)
+      newUser.roles.push(UserRole.USER)
       await newUser.save()
       return newUser;
     } catch (error) {
@@ -34,6 +35,14 @@ export class UsersService {
     return userSerch;
   }
 
+  async findById(_id) {
+    const userSerch = await this.userModel.findById(_id)
+    if (!userSerch) {
+      throw new UnauthorizedException(`el usuario con el id ${_id} no fue encontrado`)
+    }
+    return userSerch;
+  }
+
   async remove(_id: string) {
     const removeUser = await this.userModel.findOneAndUpdate(
       { _id },
@@ -44,7 +53,28 @@ export class UsersService {
     if (!removeUser) {
       throw new NotFoundException(`el usuario con el id ${_id} no fue encontrado`)
     }
-
     return `el usuario con el id ${_id} no fue encontrado`;
+  }
+
+  //codigo de verificacion por correo para poder restablecer la contraseña
+  async addVerificationCode(code: string, email: string) {
+    const expires = new Date(Date.now() + 5 * 60 * 1000);
+    await this.userModel.updateOne(
+      { email },
+      {
+        verificationCode: code,
+        verificationCodeExpires: expires,
+      }
+    )
+  }
+
+  //refrestoken
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.userModel.findByIdAndUpdate(
+      { _id: userId },
+      { refreshToken: hashedRefreshToken},
+      { new: true }
+    );
   }
 }

@@ -4,9 +4,4 @@ import { NodemailerService } from './nodemailer.service';
 @Controller('nodemailer')
 export class NodemailerController {
   constructor(private readonly nodemailerService: NodemailerService) {}
-
-  @Get()
-  async emailRecoveryPassword(){
-    return await this.nodemailerService.emailRecoveryPassword();
-  }
 }
