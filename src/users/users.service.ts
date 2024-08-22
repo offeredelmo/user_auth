@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -56,6 +56,36 @@ export class UsersService {
     return `el usuario con el id ${_id} no fue encontrado`;
   }
 
+  //recoverypassword
+
+  async recoveryPassword(email: string, password: string, verificationCode: string) {
+
+    const user = await this.findByEmail(email)
+    if (verificationCode === user.verificationCode) {
+
+      if (user.verificationCodeExpires > new Date()) {
+
+        try {
+          user.password = await bcrypt.hash(password, 10)
+          user.verificationCode = null
+          user.verificationCodeExpires = null
+          user.save()
+          return "contraseña cambiada"
+        } catch (error) {
+          throw new ServiceUnavailableException("a ocurrido un error intestelo mas tarde o reportelo a soporte")
+        }
+        
+      } else {
+        console.log(verificationCode, ":", user.verificationCode)
+        throw new UnauthorizedException("el codigo a expirado solicita uno nuevo")
+      }
+
+    } else {
+      throw new UnauthorizedException("el codigo no es valido")
+    }
+  }
+
+
   //codigo de verificacion por correo para poder restablecer la contraseña
   async addVerificationCode(code: string, email: string) {
     const expires = new Date(Date.now() + 5 * 60 * 1000);
@@ -73,7 +103,7 @@ export class UsersService {
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     await this.userModel.findByIdAndUpdate(
       { _id: userId },
-      { refreshToken: hashedRefreshToken},
+      { refreshToken: hashedRefreshToken },
       { new: true }
     );
   }

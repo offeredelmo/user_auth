@@ -14,7 +14,6 @@ export class User {
   @Prop({required: true})
   name: string;
 
-
   @Prop({required:true, unique:true})
   email: string;
 
@@ -23,6 +22,12 @@ export class User {
 
   @Prop({ type: [String], enum: UserRole })
   roles: UserRole[];
+
+  @Prop()
+  verificationCode: string
+
+  @Prop()
+  verificationCodeExpires: Date
 
   @Prop()
   refreshToken: string;

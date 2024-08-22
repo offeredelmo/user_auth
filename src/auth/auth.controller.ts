@@ -9,6 +9,7 @@ import { AccessTokenGuard } from './guard/accessToken.guard';
 import { IsEmail } from 'class-validator';
 import { EmailValidationPipe } from './pipes/email_validation.pipe';
 import { RefreshTokenGuard } from './guard/refreshToken.guard';
+import { RecoveryPasswordDto } from './dto/recoveryPassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -23,9 +24,15 @@ export class AuthController {
     return await this.authService.register(registerDto)
   }
 
+  @Post("email-recovery-password")
+  async sendRecoveryCodeEmail(@Body('email', EmailValidationPipe) email: string) {
+    return this.authService.sendRecoveryCodeEmail(email)
+  }
+
   @Post("recovery_password")
-  async recoveryPasswordByEmail(@Body('email', EmailValidationPipe) email: string) {
-    return this.authService.sendEmailByRecoverypassword(email)
+  async recoveryPasswordByEmail(@Body() recoveryPasswordDto:RecoveryPasswordDto ) {
+    const {email, password, verificationCode} = recoveryPasswordDto
+    return await this.authService.recoveryPassword(email, password, verificationCode)
   }
 
   @UseGuards(RefreshTokenGuard)

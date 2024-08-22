@@ -44,17 +44,22 @@ export class AuthService {
   }
 
   //genera un codigo de 7 digitos que manda al correo para validarlo despues al recuperar la contraseña
-  async sendEmailByRecoverypassword(email: string) {
+  async sendRecoveryCodeEmail(email: string) {
 
     await this.usersService.findByEmail(email)
 
     const code = randomBytes(7).toString('hex').substring(0, 7);
 
-    const responseEmail = await this.nodemailerService.sendEmailByRecoverypassword(code)
+    const responseEmail = await this.nodemailerService.sendEmailByRecoverypassword(code, email)
 
     this.usersService.addVerificationCode(code, email)
 
     return responseEmail
+  }
+
+  //cambia la contraseña
+  async recoveryPassword(email:string, password:string, verificationCode:string) {
+    return await this.usersService.recoveryPassword(email, password, verificationCode)
   }
 
   //se obtienen refresh token y accestoken
